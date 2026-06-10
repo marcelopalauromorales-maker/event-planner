@@ -20,11 +20,13 @@ public class EventDialog extends JDialog {
     private JTextArea descArea;
     private JComboBox<String> categoryCombo;
     private JSpinner reminderSpinner;
+    private LocalDate selectedDate;
 
-    public EventDialog(JFrame parent, EventManager eventManager, Event oldEvent) {
+    public EventDialog(JFrame parent, EventManager eventManager, Event oldEvent, LocalDate selectedDate) {
         super(parent, oldEvent == null ? "New Event" : "Edit Event", true);
         this.eventManager = eventManager;
         this.oldEvent = oldEvent;
+        this.selectedDate = selectedDate;
         setSize(420, 480);
         setLocationRelativeTo(parent);
         initUI();
@@ -47,7 +49,7 @@ public class EventDialog extends JDialog {
         gbc.gridx = 0; gbc.gridy++;
         form.add(new JLabel("Date (yyyy-mm-dd):*"), gbc);
         gbc.gridx = 1;
-        dateField = new JTextField(LocalDate.now().toString());
+        dateField = new JTextField(selectedDate != null ? selectedDate.toString() : LocalDate.now().toString());
         form.add(dateField, gbc);
 
         gbc.gridx = 0; gbc.gridy++;
