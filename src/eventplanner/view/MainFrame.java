@@ -103,7 +103,7 @@ public class MainFrame extends JFrame {
     }
 
     public void openEventDialog(eventplanner.model.Event oldEvent) {
-        EventDialog dlg = new EventDialog(this, eventManager, oldEvent);
+        EventDialog dlg = new EventDialog(this, eventManager, oldEvent, calendarPanel.getSelectedDate());
         dlg.setVisible(true);
         refreshAll();
     }
