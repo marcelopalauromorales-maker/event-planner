@@ -1,0 +1,15 @@
+# Compiled files
+out/
+*.class
+
+# Data files
+data/*.txt
+!data/.gitkeep
+
+# VS Code specific
+.vscode/
+*.code-workspace
+
+# OS garbage
+.DS_Store
+Thumbs.db

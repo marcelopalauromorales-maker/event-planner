@@ -1,5 +1,6 @@
 package eventplanner.view;
 
+import eventplanner.model.Event;
 import eventplanner.model.EventManager;
 
 import javax.swing.*;
@@ -7,8 +8,9 @@ import java.awt.*;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
-// Draws a monthly calendar grid with buttons for each day
+// Draws a monthly calendar grid with colored buttons for days that have events
 public class CalendarPanel extends JPanel {
     private EventManager eventManager;
     private MainFrame parent;
@@ -31,15 +33,30 @@ public class CalendarPanel extends JPanel {
 
     private void createHeader() {
         JPanel header = new JPanel(new BorderLayout());
+        JPanel navPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+
         JButton prev = new JButton("<");
         JButton next = new JButton(">");
+        JButton todayBtn = new JButton("Today");
+
         prev.addActionListener(e -> changeMonth(-1));
         next.addActionListener(e -> changeMonth(1));
+        todayBtn.addActionListener(e -> {
+            selectedDate = LocalDate.now();
+            currentMonth = selectedDate.withDayOfMonth(1);
+            refreshCalendar();
+            parent.refreshAll();
+        });
+
+        navPanel.add(prev);
+        navPanel.add(next);
+        navPanel.add(todayBtn);
+
         monthLabel = new JLabel("", SwingConstants.CENTER);
         monthLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        header.add(prev, BorderLayout.WEST);
+
+        header.add(navPanel, BorderLayout.WEST);
         header.add(monthLabel, BorderLayout.CENTER);
-        header.add(next, BorderLayout.EAST);
         add(header, BorderLayout.NORTH);
     }
 
@@ -52,9 +69,10 @@ public class CalendarPanel extends JPanel {
         daysGrid.removeAll();
         YearMonth yearMonth = YearMonth.from(currentMonth);
         LocalDate firstOfMonth = currentMonth.withDayOfMonth(1);
-        int offset = firstOfMonth.getDayOfWeek().getValue() - 1; // Monday=1 -> offset 0
+        // Monday = 1, Sunday = 7; offset for Monday‑first calendar
+        int offset = (firstOfMonth.getDayOfWeek().getValue() - 1 + 7) % 7;
 
-        // Day name header
+        // Weekday headers
         String[] weekDays = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
         for (String d : weekDays) {
             JLabel lbl = new JLabel(d, SwingConstants.CENTER);
@@ -62,7 +80,7 @@ public class CalendarPanel extends JPanel {
             daysGrid.add(lbl);
         }
 
-        // empty cells before month start
+        // Empty cells before month start
         for (int i = 0; i < offset; i++) {
             daysGrid.add(new JLabel(""));
         }
@@ -70,26 +88,68 @@ public class CalendarPanel extends JPanel {
         int daysInMonth = yearMonth.lengthOfMonth();
         for (int day = 1; day <= daysInMonth; day++) {
             LocalDate date = LocalDate.of(currentMonth.getYear(), currentMonth.getMonth(), day);
-            JButton dayBtn = new JButton(String.valueOf(day));
+            List<Event> eventsOnDate = eventManager.getEventsOnDate(date);
+            int eventCount = eventsOnDate.size();
+
+            // Button label: day number + event count in parentheses if any
+            String label = (eventCount > 0) ? day + " (" + eventCount + ")" : String.valueOf(day);
+            JButton dayBtn = new JButton(label);
             dayBtn.setFocusPainted(false);
-            // highlight if there is any event
-            if (!eventManager.getEventsOnDate(date).isEmpty()) {
-                dayBtn.setBackground(new Color(173, 216, 230)); // light blue
+
+            // Background color based on category of first event (if any)
+            if (eventCount > 0) {
+                String cat = eventsOnDate.get(0).getCategory();
+                dayBtn.setBackground(getColorForCategory(cat));
+            } else {
+                dayBtn.setBackground(null);
             }
+
+            // Border: red for selected date, blue for today (if not selected)
             if (date.equals(selectedDate)) {
                 dayBtn.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
+            } else if (date.equals(LocalDate.now())) {
+                dayBtn.setBorder(BorderFactory.createLineBorder(Color.BLUE, 2));
+            } else {
+                dayBtn.setBorder(null);
             }
+
+            // Tooltip: list all event titles for that day
+            if (eventCount > 0) {
+                StringBuilder tip = new StringBuilder("<html>");
+                for (Event e : eventsOnDate) {
+                    tip.append(e.getTitle()).append("<br>");
+                }
+                tip.append("</html>");
+                dayBtn.setToolTipText(tip.toString());
+            } else {
+                dayBtn.setToolTipText("No events");
+            }
+
             dayBtn.addActionListener(e -> {
                 selectedDate = date;
-                refreshCalendar();     // redraw to update border
-                parent.refreshAll();
+                refreshCalendar();       // update border highlight
+                parent.refreshAll();     // show events in the list panel
             });
+
             daysGrid.add(dayBtn);
         }
 
         monthLabel.setText(currentMonth.format(DateTimeFormatter.ofPattern("MMMM yyyy")));
         daysGrid.revalidate();
         daysGrid.repaint();
+    }
+
+    // Returns a color based on event category (light pastel tones)
+    private Color getColorForCategory(String category) {
+        if (category == null) return new Color(173, 216, 230); // light blue default
+        switch (category) {
+            case "Meeting":     return new Color(255, 200, 200); // light red
+            case "Birthday":    return new Color(200, 255, 200); // light green
+            case "Appointment": return new Color(200, 200, 255); // light blue
+            case "Study":       return new Color(255, 255, 200); // light yellow
+            case "Leisure":     return new Color(255, 200, 255); // light pink
+            default:            return new Color(173, 216, 230);
+        }
     }
 
     public LocalDate getSelectedDate() { return selectedDate; }
