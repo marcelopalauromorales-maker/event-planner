@@ -20,17 +20,30 @@ Basicamente é um gerenciador de eventos com calendário. Você clica numa data,
 
 Também implementamos eventos recorrentes (diário, semanal ou mensal), que foi a parte mais trabalhosa do projeto. E na hora que abre o programa ele já mostra um popup com os eventos que estão chegando.
 
-### Funcionalidades
+---
 
-- [x] Calendário mensal com navegação entre meses
-- [x] Datas com eventos são destacadas visualmente
-- [x] Criar, editar e deletar eventos
-- [x] Eventos recorrentes (diário, semanal, mensal) com data de fim opcional
-- [x] Lembrete configurável por evento
-- [x] Popup de lembretes na inicialização
-- [x] Busca de eventos por palavra-chave
-- [x] Dados salvos em CSV automaticamente
-- [x] Validação dos campos com mensagens de erro
+## Funcionalidades
+
+### Calendário
+O calendário mostra o mês inteiro e destaca os dias que tem evento com uma cor de fundo baseada na categoria do primeiro evento daquele dia (reunião em vermelho claro, aniversário em verde, estudo em amarelo e assim por diante). Passando o mouse em cima de um dia aparece um tooltip com os títulos dos eventos. Tem botões pra navegar entre meses e um botão "Today" que volta direto pro dia de hoje.
+
+### Eventos
+Dá pra criar, editar e deletar eventos. Cada evento guarda título, data, horário, local, descrição, categoria e quantas horas antes o lembrete deve aparecer. As categorias disponíveis são: Meeting, Birthday, Appointment, Study, Leisure e Other.
+
+### Eventos recorrentes
+Na criação do evento tem uma opção pra marcar como recorrente e escolher se repete diário, semanal ou mensal. Também dá pra colocar uma data de fim, ou deixar em branco pra repetir sem prazo. Ao deletar um evento recorrente o programa pergunta se quer apagar só aquela ocorrência ou a série inteira.
+
+### Lembretes
+Cada evento tem um campo de lembrete em horas (de 0 a 168h antes). Quando o programa é aberto ele verifica automaticamente quais eventos estão dentro do prazo de lembrete das próximas 24 horas e mostra um popup com a lista deles.
+
+### Busca
+Tem uma barra de busca no topo da janela. A pesquisa olha pro título e pra descrição dos eventos e mostra os resultados na lista lateral.
+
+### Persistência
+Os eventos são salvos automaticamente num arquivo CSV sempre que tem alguma alteração. Na próxima vez que abrir o programa os dados são carregados de volta. Se o arquivo não existir ainda, o programa cria a pasta `data/` sozinho na primeira execução.
+
+### Validação e erros
+Campos obrigatórios (título, data e horário) são validados antes de salvar. Formatos de data ou horário errados mostram uma mensagem de erro clara, sem expor stack traces pro usuário.
 
 ---
 
