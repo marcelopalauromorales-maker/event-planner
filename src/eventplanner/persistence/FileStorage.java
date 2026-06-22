@@ -1,3 +1,7 @@
+// Marcelo Palauro Morales	14594034
+// Rodrigo Eduardo Rubiano	16311091
+// Rapha Mendes	
+
 package eventplanner.persistence;
 
 import eventplanner.model.Event;
